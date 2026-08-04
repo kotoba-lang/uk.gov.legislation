@@ -1,0 +1,1 @@
+c3240916-2601-45c5-b9ef-45958a36dfa3 bucket=gftdcojp-m365-annex chunk=50MiB datacenter=US encryption=none fileprefix=uk.gov.legislation/ host=s3.us-west-004.backblazeb2.com name=b2 port=443 protocol=https signature=v4 storageclass=STANDARD type=S3 timestamp=1785832780s
