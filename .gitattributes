@@ -1,0 +1,25 @@
+# git-annex routing for a legal-text preservation dataset.
+#
+# The DataLad default (annex only what is binary) is WRONG here: every
+# preserved byte in raw/ is text -- JSON, XHTML, XML -- and getting that text
+# out of git history is the entire reason this is an annexed dataset rather
+# than a plain repository. So raw/ is routed explicitly, by path, not by
+# mimeencoding.
+#
+# Conversely index/ and raw/source-catalog.edn must stay in git proper. They
+# are what a consumer reads to query the corpus and to verify custody of it;
+# if they were annexed, answering "which acts amend this one?" would require
+# downloading gigabytes first.
+#
+# Later lines win, so the general rule comes first and the exceptions after.
+
+* annex.backend=SHA256E
+* annex.largefiles=((mimeencoding=binary)and(largerthan=0))
+
+**/.git* annex.largefiles=nothing
+README.md annex.largefiles=nothing
+bin/** annex.largefiles=nothing
+index/** annex.largefiles=nothing
+
+raw/** annex.largefiles=anything
+raw/source-catalog.edn annex.largefiles=nothing
