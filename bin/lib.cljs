@@ -18,7 +18,16 @@
 
 (defn mkdirp! [p] (.mkdirSync fs p #js {:recursive true}))
 
-(defn write-file! [p ^js buf]
+(defn write-file!
+  "Writes buf to p, replacing an existing git-annex symlink rather than
+   writing through it. Once a dataset has been `datalad save`d, raw/ files
+   are symlinks into .git/annex/objects, and those objects are mode 444 --
+   a plain writeFileSync follows the link and dies with EACCES. Unlinking
+   first turns a re-fetch into a new file that the next `datalad save`
+   annexes normally."
+  [p ^js buf]
+  (when (try (.isSymbolicLink (.lstatSync fs p)) (catch :default _ false))
+    (.unlinkSync fs p))
   (.writeFileSync fs p buf))
 
 (defn file-size [p] (.-size (.statSync fs p)))
@@ -54,9 +63,22 @@
 (defn fetch-buffer
   "GET url -> js/Buffer, with bounded retries and exponential backoff.
    Returns a promise of {:ok true :buf b} or {:ok false :status n :error s}.
-   Never throws: a single dead upstream row must not abort a 9,000-row run."
+   Never throws: a single dead upstream row must not abort a 9,000-row run.
+
+   :validate is a (fn [buf] -> truthy) applied to a 2xx body. A body that
+   fails it is retried with backoff exactly like a 5xx, and reported as
+   :invalid-body if it never passes.
+
+   This is not defensive padding. Measured 2026-08-04: under a pool of 6,
+   laws.e-gov.go.jp answered 8,548 of 9,536 law_data requests with its HTML
+   'page not found' page **and HTTP 200**. Checking resp.ok alone accepted
+   every one of them, and the resulting corpus looked complete -- 9,536
+   files, no failures logged -- while 90% of it was the same 34 KB error
+   page. Nothing downstream would have caught it either; it was only found
+   because git-annex deduplicated 9,537 files into 989 keys. A status code
+   is not evidence that a body is what was asked for."
   ([url] (fetch-buffer url {}))
-  ([url {:keys [tries accept headers] :or {tries 4}}]
+  ([url {:keys [tries accept headers validate] :or {tries 4}}]
    (letfn [(attempt [n]
              (-> (js/fetch url
                            (clj->js {:headers (cond-> {"User-Agent" "etzhayyim-legal-corpus/1.0 (+https://github.com/etzhayyim)"}
@@ -65,7 +87,15 @@
                  (.then (fn [^js resp]
                           (if (.-ok resp)
                             (-> (.arrayBuffer resp)
-                                (.then (fn [ab] {:ok true :buf (js/Buffer.from ab)})))
+                                (.then (fn [ab]
+                                         (let [buf (js/Buffer.from ab)]
+                                           (if (or (nil? validate) (validate buf))
+                                             {:ok true :buf buf}
+                                             (if (< n tries)
+                                               (-> (sleep (* 1000 (js/Math.pow 2 n)))
+                                                   (.then (fn [_] (attempt (inc n)))))
+                                               {:ok false :status :invalid-body
+                                                :bytes (.-length buf)}))))))
                             (if (and (< n tries) (or (>= (.-status resp) 500) (= 429 (.-status resp))))
                               (-> (sleep (* 1000 (js/Math.pow 2 n)))
                                   (.then (fn [_] (attempt (inc n)))))
