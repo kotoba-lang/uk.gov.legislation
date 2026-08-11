@@ -1,0 +1,8 @@
+{:schema "etzhayyim.repository/v1"
+ :repository "kotoba-lang/uk.gov.legislation"
+ :kind :public-corpus-dataset
+ :storage :datalad-git-annex
+ :boundary {:owns :public-corpus-and-query-surface
+            :does-not-own :tamaki-organism-runtime}
+ :migration {:from "etzhayyim/uk.gov.legislation"
+             :date "2026-08-11"}}
