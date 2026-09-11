@@ -1,4 +1,4 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; Preserves legislation.gov.uk UK Public General Acts into raw/.
 ;;
 ;;   raw/feed/ukpga-<year>.atom  — GET /ukpga/<year>/data.feed (all acts of
@@ -18,7 +18,7 @@
 ;; consumer (global-legislation-datoms), never here -- raw/ stays byte-identical
 ;; to what the upstream served, so its sha256 means something.
 ;;
-;; Usage: nbb --classpath bin bin/fetch.cljk [--pool N] [--from YYYY] [--limit N]
+;; Usage: kbb --backend sci --classpath bin bin/fetch.cljk [--pool N] [--from YYYY] [--limit N]
 (ns fetch
   (:require [lib :refer [fetch-buffer log mkdirp! exists? write-file! pooled
                          sleep file-size]]
