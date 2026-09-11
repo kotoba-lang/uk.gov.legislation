@@ -47,8 +47,8 @@ legislation.gov.uk は改正反映版の本文中で、他の法令への参照�
 ## 再取得 / 再生成
 
 ```bash
-nbb --classpath bin bin/fetch.cljk --pool 4 --from 1801 --to 2026
-nbb --classpath bin bin/index.cljk
+kbb --backend sci --classpath bin bin/fetch.cljk --pool 4 --from 1801 --to 2026
+kbb --backend sci --classpath bin bin/index.cljk
 ```
 
 取得は再開可能です。実測 2026-08-04、pool 4 の 1 回目で 1984–1985 年の 27 件が連続して失敗しました（上流のレート制限と見られる）——`--pool 2` で同じ範囲を再実行して全件揃いました。失敗は握り潰さずログに ID を出すので、この種の穴は再実行で埋まります。
