@@ -14,7 +14,7 @@
 ;; Distinguishing the two is the whole point: "which acts changed this act"
 ;; and "which acts mention this act" are different questions.
 ;;
-;; Usage: nbb --classpath bin bin/index.cljs
+;; Usage: nbb --classpath bin bin/index.cljk
 (ns index
   (:require [lib :refer [log write-edn! sha256-file file-size mkdirp!]]
             [clojure.string :as str]))
