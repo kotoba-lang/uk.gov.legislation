@@ -1,6 +1,6 @@
 ;; Shared helpers for the e-Gov 法令API v2 raw-preservation fetchers.
 ;;
-;; nbb only (no bb, no .sh, no .mjs -- CLAUDE.md runtime priority). Node's
+;; nbb only (no bb, no .sh, no .mjs -- AGENTS.md runtime priority). Node's
 ;; own fetch/crypto/fs are used directly; nothing here depends on a JVM.
 (ns lib
   (:require [clojure.string :as str]))
